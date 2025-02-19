@@ -1,0 +1,22 @@
+ apt-get install -y chrony
+vim /etc/chrony.conf
+Все коментим 
+server ntp2.vniiftri.ru iburst
+local stratum 5
+allow all
+systemctl enable chronyd
+systemctl restart chronyd
+chronyc tracking
+timedatectl set-timezone Europe/Moscow
+timedatectl
+На клиентах 
+apt-get install -y chrony
+/etc/chrony.conf 
+server 192.168.11.2 iburst
+sudo systemctl enable chronyd
+sudo systemctl restart chronyd
+chronyc tracking
+timedatectl set-timezone Europe/Moscow
+timedatectl
+Проверка 
+chronyc sources -v
