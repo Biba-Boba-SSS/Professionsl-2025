@@ -1,0 +1,102 @@
+/etc/net/ifaces/gre1/options
+TUNLOCAL=x.x.x.x
+TUNREMOTE=y.y.y.y
+TUNTYPE=gre
+TYPE=iptun
+TUNTTL=64
+TUNMTU=1476
+TUNOPTIONS='ttl 64'
+DISABLE=no
+/etc/net/ifaces/gre1/ipv4address:
+172.17.0.0 peer 172.17.0.1
+Настройки противоположной стороны идентичны, необходимо лишь поменять местами IP адреса в TUNLOCAL и TUNREMOTE.
+iptables -I INPUT -i ens33 -p 47 -j ACCEPT
+iptables -I OUTPUT -o ens33 -p 47 -j ACCEPT
+ifup gre1
+ШИФРОВАНИЕ (нужно ли хз) 
+apt-get install ipsec-tools
+/etc/racoon/racoon.conf
+path include "/etc/racoon/";
+path pre_shared_key "/etc/racoon/psk.txt";
+
+log notify; # notify,debug,debug2
+# "padding" defines some parameter of padding.  You should not touch these.
+        padding
+        {
+          maximum_length 20;
+          randomize off;
+          strict_check off;
+          exclusive_tail off;
+        }
+
+        # if no listen directive is specified, racoon will listen to all
+        # available interface addresses.
+        listen
+        {
+          isakmp x.x.x.x [500];
+        }
+
+        # Specification of default various timer.
+
+        timer
+        {
+        # These value can be changed per remote node.
+          counter 5;# maximum trying count to send.
+          interval 20 sec;# maximum interval to resend.
+          persend 1;# the number of packets per a send.
+
+        # timer for waiting to complete each phase.
+          phase1 30 sec;
+          phase2 15 sec;
+        }
+
+
+# 
+remote y.y.y.y
+        {
+            exchange_mode main;
+            #exchange_mode aggressive;
+            doi ipsec_doi;
+            situation identity_only;
+            nonce_size 16;
+            lifetime time 60 min;
+            initial_contact on;
+            support_proxy on;
+            proposal_check obey;# obey, strict or claim
+            proposal {
+                    encryption_algorithm 3des;
+                    hash_algorithm sha1;
+                    authentication_method pre_shared_key;
+                    dh_group 2;
+                 }
+        }
+        
+        # Шифруем только GRE
+        sainfo  address x.x.x.x/32 47 address y.y.y.y/32 47 
+        {
+            pfs_group 2;
+            lifetime time 24 hour;
+            encryption_algorithm 3des;
+            authentication_algorithm hmac_sha1;
+            compression_algorithm deflate;
+        }
+/etc/racoon/setkey.conf
+#!/sbin/setkey -f
+
+flush;
+spdflush;
+
+spdadd x.x.x.x/32 y.y.y.y/32 47 -P out ipsec esp/tunnel/x.x.x.x-y.y.y.y/unique;
+spdadd y.y.y.y/32 x.x.x.x/32 47 -P in  ipsec esp/tunnel/y.y.y.y-x.x.x.x/unique;
+В /etc/racoon/psk.txt указывается ключ шифрования — должен быть идентичен на обеих сторонах. Обратите внимание, y.y.y.y — внешний IP адрес противоположной стороны туннеля:
+у.y.y.y blablabla_secret_code_Kote_2011
+Права на файлы:
+# l
+...
+-rw-------   1 root root  psk.txt
+-rw-r--r--   1 root root  racoon.conf
+-rw-r--r--   1 root root  setkey.conf
+загрузить правила, говорим
+setkey -f /etc/racoon/setkey.conf
+
+service racoon start
