@@ -1,0 +1,67 @@
+apt-get install quagga
+chown -R quagga:quagga /etc/quagga 
+vim /etc/quagga/ospfd.conf и вкставить в этот файл изменить IP в некоторых местах
+!
+hostname host-x
+password 8 LrjDz/a2KALVQ
+enable password 8 LrjDz/a2KALVQ
+log file /var/log/quagga/ospfd.log informational
+service password-encryption
+no banner motd
+!
+interface gre0
+!
+interface gre1
+ description link-gre1
+ ip ospf authentication message-digest
+ ip ospf message-digest-key 1 md5 SecrEtKeY
+ ip ospf cost 100
+ ip ospf dead-interval 60
+!
+interface lo
+!
+router ospf
+ ospf router-id 192.168.1.1
+ redistribute connected route-map RedistNets
+ network 172.17.0.0/30 area 0.0.0.0
+!
+access-list 111 permit ip 192.168.1.0 0.0.0.255 any
+access-list localhost permit 127.0.0.1/32
+access-list localhost deny any
+!
+route-map RedistNets permit 10
+ match ip address 111
+!
+line vty
+ access-class localhost
+vim /etc/quagga/zebra.conf
+hostname router
+password 8 LrjDz/a2KALVQ
+enable password 8 LrjDz/a2KALVQ
+log file /var/log/quagga/zebra.log informational
+service password-encryption
+no banner motd
+!
+interface gre0
+!
+interface gre1
+ ip address 172.17.0.2/30
+ link-detect
+!
+interface lo
+ description loopback
+!
+access-list localhost permit 127.0.0.1/32
+access-list localhost deny any
+!
+ip forwarding
+no ipv6 forwarding
+!
+line vty
+ access-class localhost
+!
+service zebra start
+service ospfd start
+chkconfig ospfd on
+chkconfig zebra on
+netstat -nlp |grep :260
