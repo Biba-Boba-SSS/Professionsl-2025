@@ -1,0 +1,5 @@
+useradd sshuser
+passwd sshuser
+usermod –aG wheel sshuser
+vim /etc/sudoers 
+sshuser ALL=(ALL) NOPASSWD:ALL
