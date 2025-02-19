@@ -1,0 +1,4 @@
+cd /etc/dhcp
+cp dhcpd.conf.example dhcpd.conf
+vim /etc/dhcp/dhcpd.conf 
+Комментируем все кроме настроки 
