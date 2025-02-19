@@ -1,0 +1,16 @@
+/etc/net/ifaces/<имя сетевого адаптера>/
+изменить содержимое файла options на следующее:
+BOOTPROTO=static
+TYPE=eth
+ONBOOT=yes
+DISABLED=no
+NM_CONTROLLED=no
+CONFIG_WIRELESS=no
+CONFIG_IPV4=yes
+CONFIG_IPV6=no
+SYSTEMD_BOOTPROTO=static
+SYSTEMD_CONTROLLED=no
+создать файл ipv4address и указать адрес и маску
+192.168.0.10/24
+ipv4route – для указания шлюза, например, со строкой
+default via 192.168.0.1
