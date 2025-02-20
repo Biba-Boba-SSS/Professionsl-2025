@@ -2,3 +2,16 @@ cd /etc/dhcp
 cp dhcpd.conf.example dhcpd.conf
 vim /etc/dhcp/dhcpd.conf 
 Комментируем все кроме настроки 
+subnet 192.168.33.0 netmask 255.255.255.0 {
+range 192.168.33.50 192.168.33.100
+option domain-nameserver 8.8.8.8
+option domain-name "au.team'
+option routers 192.168.33.255
+default-lease-time 600;
+max-lease-time 7200;
+}
+vim /etc/sysconfig/dhcpd
+DHCPDARGS=ens36
+systemctl start dhcpd.service
+systemctl enable dhcpd.service
+systemctl status dhcpd.service
