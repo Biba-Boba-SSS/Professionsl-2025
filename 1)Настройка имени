@@ -1,1 +1,1 @@
-Hostnamectl set-hostname (имя)
+hostnamectl set-hostname (имя)
