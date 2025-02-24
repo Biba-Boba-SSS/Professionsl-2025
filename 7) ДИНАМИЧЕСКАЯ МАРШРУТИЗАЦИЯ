@@ -34,6 +34,7 @@ route-map RedistNets permit 10
 !
 line vty
  access-class localhost
+
 vim /etc/quagga/zebra.conf
 hostname router
 password 8 LrjDz/a2KALVQ
